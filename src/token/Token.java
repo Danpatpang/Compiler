@@ -1,11 +1,75 @@
 package  token;
-
+// token 하나가 한 단어이므로 뛰어쓰기 단위로 구분
 public class Token {
-
+    // KEYWORDS = 10 (Eof의 위치)
     private static final int KEYWORDS = TokenType.Eof.ordinal();
     private static final String[] reserved = new String[KEYWORDS];
     private static Token[] token = new Token[KEYWORDS];
+    private TokenType type;
+    private String value = "";
+
+    //생성자
+    private Token(TokenType t, String v){
+        type = t;
+        value = v;
+        // Eof보다 먼저오면 -, 같으면 0, 늦게오면 +
+        if(t.compareTo(TokenType.Eof) < 0) {
+            int t_location = t.ordinal();
+            reserved[t_location] = v;
+            token[t_location] = this;
+        }
+    }
+
+    //TokenType 전체 return
+    public TokenType type(){
+        return type;
+    }
+    //String 전체 return
+    public String value(){
+        return value;
+    }
+    //Keyword
+    public static Token keyword(String name) {
+        //String의 첫 글자가 문자일 경우 Identifier
+        char ch = name.charAt(0);
+        if (ch >= 'A' && ch <= 'Z') {
+            return mkIdentTok(name);
+        }
+        for (int i = 0; i < KEYWORDS; i++) {
+            if (name.equals(reserved[i])) {
+                return mkIdentTok(name);
+            }
+        }
+        return mkIdentTok(name);
+    }
+
+    public static Token mkIdentTok(String name){
+        return new Token(TokenType.Identifier, name);
+    }
+    public static Token mkIntLiteral(String name){
+        return new Token(TokenType.IntLiteral, name);
+    }
+    public static Token mkFloatLiteral(String name){
+        return new Token(TokenType.FloatLiteral, name);
+    }
+    public static Token mkCharLiteral(String name){
+        return new Token(TokenType.CharLiteral, name);
+    }
+    //to string
+    public String toString(){
+        if(type.compareTo(TokenType.Identifier) < 0){
+            return value;
+        }
+        return type + "\t"  + value;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(eofTok);
+        System.out.println(whileTok);
+    }
+
     public static final Token eofTok = new Token(TokenType.Eof, "<<EOF>>");
+    public static final Token whileTok = new Token(TokenType.While, "while");
     public static final Token boolTok = new Token(TokenType.Bool, "bool");
     public static final Token charTok = new Token(TokenType.Char, "char");
     public static final Token elseTok = new Token(TokenType.Else, "else");
@@ -15,7 +79,6 @@ public class Token {
     public static final Token intTok = new Token(TokenType.Int, "int");
     public static final Token mainTok = new Token(TokenType.Main, "main");
     public static final Token trueTok = new Token(TokenType.True, "true");
-    public static final Token whileTok = new Token(TokenType.While, "while");
     public static final Token leftBraceTok = new Token(TokenType.LeftBrace, "{");
     public static final Token rightBraceTok = new Token(TokenType.RightBrace, "}");
     public static final Token leftBracketTok = new Token(TokenType.LeftBracket, "[");
@@ -39,54 +102,4 @@ public class Token {
     public static final Token andTok = new Token(TokenType.And, "&&");
     public static final Token orTok = new Token(TokenType.Or, "||");
 
-    private TokenType type;
-    private String value = "";
-
-    private Token (TokenType t, String v) {
-        type = t;
-        value = v;
-        if (t.compareTo(TokenType.Eof) < 0) {
-            int ti = t.ordinal();   //정의된 순서를 return 0부터 시작
-            reserved[ti] = v;
-            token[ti] = this;
-        }
-    }
-
-    public TokenType type( ) { return type; }
-
-    public String value( ) { return value; }
-
-    public static Token keyword  ( String name ) {
-        char ch = name.charAt(0);
-        if (ch >= 'A' && ch <= 'Z') return mkIdentTok(name);
-        for (int i = 0; i < KEYWORDS; i++)
-           if (name.equals(reserved[i]))  return token[i];
-        return mkIdentTok(name);
-    } // keyword
-
-    public static Token mkIdentTok (String name) {
-        return new Token(TokenType.Identifier, name);
-    }
-
-    public static Token mkIntLiteral (String name) {
-        return new Token(TokenType.IntLiteral, name);
-    }
-
-    public static Token mkFloatLiteral (String name) {
-        return new Token(TokenType.FloatLiteral, name);
-    }
-
-    public static Token mkCharLiteral (String name) {
-        return new Token(TokenType.CharLiteral, name);
-    }
-
-    public String toString ( ) {
-        if (type.compareTo(TokenType.Identifier) < 0) return value;
-        return type + "\t" + value;
-    } // toString
-
-    public static void main (String[] args) {
-        System.out.println(eofTok);
-        System.out.println(whileTok);
-    }
 } // Token
