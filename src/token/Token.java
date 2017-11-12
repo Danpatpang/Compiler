@@ -1,18 +1,16 @@
-package  token;
-// token 하나가 한 단어이므로 뛰어쓰기 단위로 구분
 public class Token {
-    // KEYWORDS = 10 (Eof의 위치)
+    // KEYWORDS = 10 (Eof's location)
     private static final int KEYWORDS = TokenType.Eof.ordinal();
     private static final String[] reserved = new String[KEYWORDS];
     private static Token[] token = new Token[KEYWORDS];
     private TokenType type;
     private String value = "";
 
-    //생성자
+    //constructor
     private Token(TokenType t, String v){
         type = t;
         value = v;
-        // Eof보다 먼저오면 -, 같으면 0, 늦게오면 +
+        // Eof fast -, equal 0, late +
         if(t.compareTo(TokenType.Eof) < 0) {
             int t_location = t.ordinal();
             reserved[t_location] = v;
@@ -20,24 +18,23 @@ public class Token {
         }
     }
 
-    //TokenType 전체 return
     public TokenType type(){
         return type;
     }
-    //String 전체 return
+
     public String value(){
         return value;
     }
     //Keyword
     public static Token keyword(String name) {
-        //String의 첫 글자가 문자일 경우 Identifier
+        //String first char is letter? Identifier
         char ch = name.charAt(0);
         if (ch >= 'A' && ch <= 'Z') {
             return mkIdentTok(name);
         }
         for (int i = 0; i < KEYWORDS; i++) {
             if (name.equals(reserved[i])) {
-                return mkIdentTok(name);
+                return token[i];
             }
         }
         return mkIdentTok(name);

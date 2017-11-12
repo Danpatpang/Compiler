@@ -1,7 +1,3 @@
-package parser;
-import java.util.*;
-import java.util.function.BooleanSupplier;
-
 public class Parser {
     // Recursive descent parser that inputs a C++Lite program and
     // generates its abstract syntax.  Each method corresponds to
@@ -11,12 +7,13 @@ public class Parser {
     Token token;          // current token from the input stream
     Lexer lexer;
 
+    // parser constructor
     public Parser(Lexer ts) { // Open the C++Lite source program
         lexer = ts;                          // as a token stream, and
         token = lexer.next();            // retrieve its first Token
     }
 
-    //match
+    //match (if true lexer.next)
     private String match (TokenType t) { // * return the string of a token if it matches with t *
         String value = token.value();
         if (token.type().equals(t))
@@ -34,6 +31,7 @@ public class Parser {
         System.exit(1);
     }
 
+    //error
     private void error(String tok) {
         System.err.println("Syntax error: expecting: " + tok
                 + "; saw: " + token);
@@ -53,22 +51,26 @@ public class Parser {
         // call Declarations
         Declarations decls = declarations();
         // call Statements
-        Block stmts = programstatements();
+        Block stmts = programStatements();
         // '}' check
         match(TokenType.RightBrace);
         return new Program (decls, stmts);
     }
 
+    //declarations
     // student exercise
     private Declarations declarations() {
         // Declarations --> { Declaration }
         Declarations decls = new Declarations();
+        //until not type
         while(isType()){
+            // one declaration
             declaration(decls);
         }
         return decls;
     }
 
+    // declaration
     // student exercise
     private void declaration (Declarations ds) {
         // Declaration  --> Type Identifier { , Identifier } ;
@@ -82,6 +84,7 @@ public class Parser {
         //declarations ArrayList add declaration
         ds.add(decl);
 
+        //if token==comma loop add
         while(token.type().equals(TokenType.Comma)){
             token = lexer.next();
             var = new Variable(match(TokenType.Identifier));
@@ -91,7 +94,7 @@ public class Parser {
         match(TokenType.Semicolon);
     }
 
-    // student exercise
+    // call type(lexer.next)
     private Type type () {
         // Type  -->  int | bool | float | char
         Type t = null;
@@ -110,6 +113,7 @@ public class Parser {
         return t;
     }
 
+    // statement
     // student exercise
     private Statement statement() {
         // Statement --> ; | Block | Assignment | IfStatement | WhileStatement
@@ -130,37 +134,21 @@ public class Parser {
         return s;
     }
 
-    private Block programstatements () {
+    // program statements not need match
+    // student exercise
+    private Block programStatements () {
         // Block --> '{' Statements '}'
         Statement stmt;
         Block b = new Block();
-        //match(TokenType.LeftBrace);
-
+        // ; | ( | if | while | identifier
         while(isStatement()){
             stmt = statement();
             b.members.add(stmt);
         }
-        //match(TokenType.RightBrace);
-        // student exercise
         return b;
     }
 
-    private Block statements () {
-        // Block --> '{' Statements '}'
-        Statement stmt;
-        Block b = new Block();
-        match(TokenType.LeftBrace);
-
-        while(isStatement()){
-            stmt = statement();
-            b.members.add(stmt);
-        }
-        match(TokenType.RightBrace);
-        // student exercise
-        return b;
-    }
-
-    //is Statement?
+    //is Statement
     private boolean isStatement() {
         return 	token.type().equals(TokenType.Semicolon) ||
                 token.type().equals(TokenType.LeftBrace) ||
@@ -168,40 +156,69 @@ public class Parser {
                 token.type().equals(TokenType.While) ||
                 token.type().equals(TokenType.Identifier);
     }
+
+    //statements need match
+    // student exercise
+    private Block statements () {
+        // Block --> '{' Statements '}'
+        Statement stmt;
+        Block b = new Block();
+        match(TokenType.LeftBrace);
+        while(isStatement()){
+            stmt = statement();
+            b.members.add(stmt);
+        }
+        match(TokenType.RightBrace);
+        return b;
+    }
+
+    //Assignment
     // student exercise
     private Assignment assignment () {
         // Assignment --> Identifier = Expression ;
         Assignment assignment;
+        // Identifier
         Variable var = new Variable(match(TokenType.Identifier));
+        // =
         match(TokenType.Assign);
+        // Expression
         Expression expr = expression();
         assignment = new Assignment(var,expr);
+        // ;
         match(TokenType.Semicolon);
         return assignment;
     }
 
+    // if statement
     // student exercise
     private Conditional ifStatement () {
         // IfStatement --> if ( Expression ) Statement [ else Statement ]
         Conditional condition;
+        // if(expr) stmt
         match(TokenType.If);
         match(TokenType.LeftParen);
         Expression expr = expression();
         match(TokenType.RightParen);
         Statement stmt = statement();
+        // token == else
         if(token.type().equals(TokenType.Else)){
+            //statement
             Statement stmt2 = statement();
+            //exist else
             condition = new Conditional(expr,stmt,stmt2);
         }else{
+            //not exist else
             condition = new Conditional(expr,stmt);
         }
         return condition;
     }
 
+    //while
     // student
     private Loop whileStatement () {
         // WhileStatement --> while ( Expression ) Statement
         Loop loop;
+        //while(expr) stmt
         match(TokenType.While);
         match(TokenType.LeftParen);
         Expression expr = expression();
@@ -217,30 +234,35 @@ public class Parser {
         Expression expr = conjunction();
         while(token.type().equals(TokenType.Or)){
             Operator operator = new Operator(match(token.type()));
+            // expression() because recursive
             Expression expr2 = expression();
             expr = new Binary(operator, expr, expr2);
         }
         return expr;
     }
 
+    // conjunction
     // student exercise
     private Expression conjunction () {
         // Conjunction --> Equality { && Equality }
         Expression conj = equality();
         while(token.type().equals(TokenType.And)){
             Operator operator = new Operator(match(token.type()));
+            //recursive
             Expression conj2 = conjunction();
             conj = new Binary(operator, conj, conj2);
         }
         return conj;
     }
 
+    // equality
     // student exercise
     private Expression equality () {
         // Equality --> Relation [ EquOp Relation ]
         Expression equal = relation();
         if(isEqualityOp()){
             Operator operator = new Operator(match(token.type()));
+            // because choice
             Expression equal2 = relation();
             equal = new Binary(operator, equal, equal2);
         }
@@ -317,16 +339,23 @@ public class Parser {
     private Value literal( ) {
         Value value = null;
         String data = token.value();
+        //int
         if(token.type().equals(TokenType.IntLiteral)){
             value = new IntValue(Integer.parseInt(data));
             token = lexer.next();
-        }else if(token.type().equals(TokenType.FloatLiteral)){
+        }
+        // float
+        else if(token.type().equals(TokenType.FloatLiteral)){
             value = new FloatValue(Float.parseFloat(data));
             token = lexer.next();
-        }else if(token.type().equals(TokenType.CharLiteral)){
+        }
+        // char
+        else if(token.type().equals(TokenType.CharLiteral)){
             value = new CharValue(data.charAt(0));
             token = lexer.next();
-        }else if(token.type().equals(TokenType.True)){
+        }
+        //boolean
+        else if(token.type().equals(TokenType.True)){
             value = new BoolValue(true);
             token = lexer.next();
         }else if(token.type().equals(TokenType.False)){
@@ -338,27 +367,31 @@ public class Parser {
         return value;
     }
 
-
+    // is Add operation
     private boolean isAddOp( ) {
         return token.type().equals(TokenType.Plus) ||
                 token.type().equals(TokenType.Minus);
     }
 
+    // is Multiply operation
     private boolean isMultiplyOp( ) {
         return token.type().equals(TokenType.Multiply) ||
                 token.type().equals(TokenType.Divide);
     }
 
+    // is Unary operation
     private boolean isUnaryOp( ) {
         return token.type().equals(TokenType.Not) ||
                 token.type().equals(TokenType.Minus);
     }
 
+    // is Equality operation
     private boolean isEqualityOp( ) {
         return token.type().equals(TokenType.Equals) ||
                 token.type().equals(TokenType.NotEqual);
     }
 
+    // is Relational operation
     private boolean isRelationalOp( ) {
         return token.type().equals(TokenType.Less) ||
                 token.type().equals(TokenType.LessEqual) ||
@@ -366,6 +399,7 @@ public class Parser {
                 token.type().equals(TokenType.GreaterEqual);
     }
 
+    // is Type operation
     private boolean isType( ) {
         return token.type().equals(TokenType.Int)
                 || token.type().equals(TokenType.Bool)
@@ -373,6 +407,7 @@ public class Parser {
                 || token.type().equals(TokenType.Char);
     }
 
+    //is Literal operation
     private boolean isLiteral( ) {
         return token.type().equals(TokenType.IntLiteral) ||
                 isBooleanLiteral() ||
@@ -380,15 +415,17 @@ public class Parser {
                 token.type().equals(TokenType.CharLiteral);
     }
 
+    //is Boolean
     private boolean isBooleanLiteral( ) {
         return token.type().equals(TokenType.True) ||
                 token.type().equals(TokenType.False);
     }
 
+    //main
     public static void main(String args[]) {
         Parser parser  = new Parser(new Lexer("test.txt"));
         Program prog = parser.program();
-        prog.display(0);           // display abstract syntax tree student
-    } //main
+        prog.display(1);           // display abstract syntax tree student
+    }
 
 } // Parser

@@ -1,4 +1,4 @@
-package token;
+// token type
 
 public enum TokenType {
      Bool, Char, Else, False, Float,
@@ -8,5 +8,9 @@ public enum TokenType {
      Equals, Less, LessEqual, Greater, GreaterEqual,
      Not, NotEqual, Plus, Minus, Multiply,
      Divide, And, Or, Identifier, IntLiteral,
-     FloatLiteral, CharLiteral
+     FloatLiteral, CharLiteral;
+
+     static public void main ( String[] argv ) {
+          System.out.print(TokenType.Bool.compareTo(TokenType.Eof));
+     }
 }

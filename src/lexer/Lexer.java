@@ -1,24 +1,23 @@
-package lexer;
-
 import java.io.*;
-import token.*;
-
 //Lexer
 public class Lexer {
     private boolean isEof = false;
     private char ch = ' ';
     private BufferedReader input;
     private String line = "";
+    // Line number
     private int lineno = 0;
-    // 몇 번째 글자인지 파악
+    // Locate text
     private int col = 1;
     private final String letters = "abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private final String digits = "0123456789";
-    private final char eolnCh = '\n';   //줄바꿈
-    private final char eofCh = '\004';  //공백
+    // Line break
+    private final char eolnCh = '\n';
+    // white space
+    private final char eofCh = '\004';
 
-    // Lexer 생성자
-    // filename을 읽어서 버퍼에 저장
+    // Lexer constructor
+    // read filename, store buffer
     public Lexer (String fileName) { // source filename
         try {
             input = new BufferedReader (new FileReader(fileName));
@@ -29,14 +28,14 @@ public class Lexer {
         }
     }
 
-    // 다음 글자 받아오기
+    // get nextChar
     private char nextChar() {
-        // ch가 공백일 경우
+        // ch == white space
         if (ch == eofCh){
             error("Attempt to read past end of file");
         }
         col++;
-        // col이 line길이의 이상이 되면 다음 라인 읽기
+        // read nextLine
         if (col >= line.length()) {
             try {
                 line = input.readLine( );
@@ -44,23 +43,23 @@ public class Lexer {
                 System.err.println(e);
                 System.exit(1);
             } // try
-            // 다음 라인이 파일의 끝인 경우
+            // is nextLine file end
             if (line == null){
                 line = "" + eofCh;
             }
-            // 라인 넘버 + 내용 + \n 출력
+            // linenum + content + \n output
             else {
-                System.out.println(lineno + ":\t" + line);
+                //System.out.println(lineno + ":\t" + line);
                 lineno++;
                 line += eolnCh;
             } // if line
-            col = 0;        // 초기화
+            col = 0;        // reset
         } // if col
-        // 다음 글자 반환
+        // return next char
         return line.charAt(col);
     }
 
-    // Token 결정
+    // Token determine
     public Token next( ) { // Return next token
         do {
             if (isLetter(ch)) { // ident or keyword
@@ -84,9 +83,9 @@ public class Lexer {
 
                 case '/':  // divide or comment
                     ch = nextChar();
-                    // 나눗셈의 경우
+                    // divide
                     if (ch != '/')  return Token.divideTok;
-                    // 주석의 경우 줄바꿈이 나올 때까지 다음 글자 읽기
+                    // comment until next char is linebreak..
                     do {
                         ch = nextChar();
                     } while (ch != eolnCh);
@@ -145,11 +144,11 @@ public class Lexer {
         } while (true);
     } // next
 
-    // 문자일 경우
+    // isletter
     private boolean isLetter(char c) {
         return (c>='a' && c<='z' || c>='A' && c<='Z');
     }
-    // 숫자일 경우
+    // isdigit
     private boolean isDigit(char c) {
         return (c>='0' && c<='9');  // student exercise
     }
@@ -170,28 +169,28 @@ public class Lexer {
         return two;
         // student exercise
     }
-    //합치기 set = letters + digits
+    //concat set = letters + digits
     private String concat(String set) {
         String r = "";
         do {
             r += ch;
             ch = nextChar();
-        } while (set.indexOf(ch) >= 0);     //문자, 숫자가 아닐 때까지 실행 후 반환
+        } while (set.indexOf(ch) >= 0);     //until not digit or letter
         return r;
     }
 
-    // error message 출력
-    // line 출력, 몇 번째 글자에서 error 출력 및 종료
+    // error message
+    // line output, locate num error
     public void error (String msg) {
-        //out의 경우 결과를 다른 파일로 redirect 가능하지만, err은 불가 but 같은 출력문
-        //out은 버퍼가 있고, err은 버퍼가 없다.
+        //out | err out have buffer and can change file
+        //but err dont have buffer and cant chagne file
         System.err.print(line);
         System.err.println("Error: column " + col + " " + msg);
         System.exit(1);
     }
 
     static public void main ( String[] argv ) {
-        Lexer lexer = new Lexer(argv[0]);
+        Lexer lexer = new Lexer("test.txt");
         Token tok = lexer.next( );
         while (tok != Token.eofTok) {
             System.out.println(tok.toString());
