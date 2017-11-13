@@ -38,7 +38,7 @@ class Declarations extends ArrayList<Declaration> {
             System.out.print("\t");
         }
         System.out.print("Declarations = {");
-        for (int i = 0; i < size(); i++)
+        for (int i = 0; i < size(); ++i)
             get(i).display(k);
         System.out.println("}");
     }
@@ -93,7 +93,7 @@ class Block extends Statement {
             System.out.print("\t");
         }
         System.out.println("Begin Statements");
-        for (int i = 0; i < members.size(); i++){
+        for (int i = 0; i < members.size(); ++i){
             members.get(i).display(k);
         }
         for (int w = 0; w < k; ++w) {
@@ -117,7 +117,7 @@ class Assignment extends Statement {
         for (int w = 0; w < k; ++w) {
             System.out.print("\t");
         }
-        System.out.println("Assignement");
+        System.out.println("Assignment");
         target.display(++k);
         source.display(k);
     }
@@ -128,6 +128,7 @@ class Conditional extends Statement {
     // Conditional = Expression test; Statement thenbranch, elsebranch
     Expression test;
     Statement thenbranch, elsebranch;
+    boolean flag = false;
     // elsebranch == null means "if... then"
 
     Conditional (Expression t, Statement tp) {
@@ -135,15 +136,27 @@ class Conditional extends Statement {
     }
 
     Conditional (Expression t, Statement tp, Statement ep) {
-        test = t; thenbranch = tp; elsebranch = ep;
+        test = t; thenbranch = tp; elsebranch = ep; flag = true;
     }
+
     public void display(int k) {
-        for (int w = 0; w < k; ++w); {
+        for (int w = 0; w < k; ++w) {
             System.out.print("\t");
         }
+        System.out.println("If Statement");
+
         test.display(++k);
         thenbranch.display(k);
-        elsebranch.display(k);
+        if(flag) {
+            this.flag = false;
+            for(int i = 0; i < k - 1; ++i) {
+                System.out.print("\t");
+            }
+            System.out.println("Else Statement");
+            //상태 출력 (else)
+            elsebranch.display(k);
+        }
+
     }
 }
 
@@ -160,6 +173,7 @@ class Loop extends Statement {
         for (int w = 0; w < k; ++w) {
             System.out.print("\t");
         }
+        System.out.println("While Statement");
         test.display(++k);
         body.display(k);
     }
