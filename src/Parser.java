@@ -57,6 +57,7 @@ public class Parser {
         return new Program (decls, stmts);
     }
 
+
     //declarations
     // student exercise
     private Declarations declarations() {
@@ -183,9 +184,9 @@ public class Parser {
         match(TokenType.Assign);
         // Expression
         Expression expr = expression();
-        assignment = new Assignment(var,expr);
         // ;
         match(TokenType.Semicolon);
+        assignment = new Assignment(var,expr);
         return assignment;
     }
 
@@ -202,10 +203,12 @@ public class Parser {
         Statement stmt = statement();
         // token == else
         if(token.type().equals(TokenType.Else)){
+            match(TokenType.Else);
             //statement
             Statement stmt2 = statement();
             //exist else
             condition = new Conditional(expr,stmt,stmt2);
+
         }else{
             //not exist else
             condition = new Conditional(expr,stmt);

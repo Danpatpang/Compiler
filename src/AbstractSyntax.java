@@ -33,7 +33,7 @@ class Declarations extends ArrayList<Declaration> {
         for (int w = 0; w < k; ++w) {
             System.out.print("\t");
         }
-        System.out.println("Declarations");
+         System.out.println("Declarations");
         for (int w = 0; w < k; ++w) {
             System.out.print("\t");
         }
